@@ -2,6 +2,7 @@ package com.sharkchili.quartzExample;
 
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.json.JSONUtil;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
@@ -9,6 +10,33 @@ import org.quartz.impl.StdSchedulerFactory;
 @Slf4j
 public class Main {
     public static void main(String[] args) throws Exception {
+        errorExamlme();
+    }
+
+    public static void baseExample() throws SchedulerException {
+        // 获取任务调度的实例
+        Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
+
+        // 定义任务调度实例, 并与TestJob绑定
+        JobDetail job = JobBuilder.newJob(MyJob.class)
+                .withIdentity("myJob", "myJobGroup")
+                .build();
+
+        // 定义触发器, 会马上执行一次, 接着1秒执行一次
+        Trigger trigger = TriggerBuilder.newTrigger()
+                .withIdentity("testTrigger", "testTriggerGroup")
+                .startNow()
+                .withSchedule(SimpleScheduleBuilder.repeatSecondlyForever(1))
+                .build();
+
+        // 使用触发器调度任务的执行
+        scheduler.scheduleJob(job, trigger);
+
+        // 开启任务
+        scheduler.start();
+    }
+
+    public void multitaskExample() throws SchedulerException {
         // 获取任务调度的实例
         Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
 
@@ -40,6 +68,35 @@ public class Main {
             scheduler.scheduleJob(jobDetail, trigger);
         }
 
+
+        // 开启任务
+        scheduler.start();
+    }
+
+    /**
+     * job和trigger设置同一个key的情况下，反射后的值会以后者为主
+     */
+    @SneakyThrows
+    public static void errorExamlme() {
+        // 获取任务调度的实例
+        Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
+
+        // 定义任务调度实例, 并与TestJob绑定
+        JobDetail job = JobBuilder.newJob(MyJob.class)
+                .usingJobData("name", "JobDetail")
+                .withIdentity("myJob", "myJobGroup")
+                .build();
+
+        // 定义触发器, 会马上执行一次, 接着5秒执行一次
+        Trigger trigger = TriggerBuilder.newTrigger()
+                .usingJobData("name", "trigger")
+                .withIdentity("testTrigger", "testTriggerGroup")
+                .startNow()
+                .withSchedule(SimpleScheduleBuilder.repeatSecondlyForever(5))
+                .build();
+
+        // 使用触发器调度任务的执行
+        scheduler.scheduleJob(job, trigger);
 
         // 开启任务
         scheduler.start();
