@@ -84,6 +84,7 @@ public class Main {
         // 定义任务调度实例, 并与TestJob绑定
         JobDetail job = JobBuilder.newJob(MyJob.class)
                 .usingJobData("name", "JobDetail")
+                .usingJobData("count", 1)
                 .withIdentity("myJob", "myJobGroup")
                 .build();
 
