@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
+import java.util.Date;
+
 @Slf4j
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -145,6 +147,7 @@ public class Main {
     /**
      * 设置CronTrigger
      * 表达式可到 https://cron.qqe2.com/
+     *
      * @throws SchedulerException
      */
     public static void cronTriggerExample() throws SchedulerException {
@@ -162,8 +165,11 @@ public class Main {
                 .withSchedule(CronScheduleBuilder.cronSchedule("* * * * * ?"))
                 .build();
 
-        // 使用触发器调度任务的执行
-        scheduler.scheduleJob(job, trigger);
+        // 使用触发器调度任务的执行 获取任务调度时间
+        Date date =scheduler.scheduleJob(job, trigger);
+
+        log.info("任务调度时间:{}", date);
+
 
         // 开启任务
         scheduler.start();
