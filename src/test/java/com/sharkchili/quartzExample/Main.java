@@ -12,7 +12,7 @@ import org.quartz.impl.StdSchedulerFactory;
 @Slf4j
 public class Main {
     public static void main(String[] args) throws Exception {
-        setTasksWithinTime();
+        cronTriggerExample();
     }
 
     public static void baseExample() throws SchedulerException {
@@ -140,4 +140,34 @@ public class Main {
         // 开启任务
         scheduler.start();
     }
+
+
+    /**
+     * 设置CronTrigger
+     * 表达式可到 https://cron.qqe2.com/
+     * @throws SchedulerException
+     */
+    public static void cronTriggerExample() throws SchedulerException {
+        // 获取任务调度的实例
+        Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
+
+        // 定义任务调度实例, 并与TestJob绑定
+        JobDetail job = JobBuilder.newJob(MyJob.class)
+                .withIdentity("myJob", "myJobGroup")
+                .usingJobData("count", 1)
+                .build();
+
+        Trigger trigger = TriggerBuilder.newTrigger()
+                .withIdentity("testTrigger", "testTriggerGroup")
+                .withSchedule(CronScheduleBuilder.cronSchedule("* * * * * ?"))
+                .build();
+
+        // 使用触发器调度任务的执行
+        scheduler.scheduleJob(job, trigger);
+
+        // 开启任务
+        scheduler.start();
+    }
+
+
 }
