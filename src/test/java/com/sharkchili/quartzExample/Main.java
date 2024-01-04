@@ -1,5 +1,7 @@
 package com.sharkchili.quartzExample;
 
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.json.JSONUtil;
 import lombok.SneakyThrows;
@@ -10,7 +12,7 @@ import org.quartz.impl.StdSchedulerFactory;
 @Slf4j
 public class Main {
     public static void main(String[] args) throws Exception {
-        errorExamlme();
+        setTasksWithinTime();
     }
 
     public static void baseExample() throws SchedulerException {
@@ -94,6 +96,42 @@ public class Main {
                 .withIdentity("testTrigger", "testTriggerGroup")
                 .startNow()
                 .withSchedule(SimpleScheduleBuilder.repeatSecondlyForever(5))
+                .build();
+
+        // 使用触发器调度任务的执行
+        scheduler.scheduleJob(job, trigger);
+
+        // 开启任务
+        scheduler.start();
+    }
+
+
+    /**
+     * 设置时间限制以内的任务
+     *
+     * @throws SchedulerException
+     */
+    public static void setTasksWithinTime() throws SchedulerException {
+        // 获取任务调度的实例
+        Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
+
+        // 定义任务调度实例, 并与TestJob绑定
+        JobDetail job = JobBuilder.newJob(MyJob.class)
+                .withIdentity("myJob", "myJobGroup")
+                .usingJobData("count", 1)
+                .build();
+
+        DateTime startTime = DateUtil.date();
+        DateTime endTime = DateUtil.offsetSecond(startTime, 5);
+
+
+        // 定义触发器, 会马上执行一次, 接着1秒执行一次
+        Trigger trigger = TriggerBuilder.newTrigger()
+                .withIdentity("testTrigger", "testTriggerGroup")
+                .startNow()
+                .startAt(startTime)
+                .endAt(endTime)
+                .withSchedule(SimpleScheduleBuilder.repeatSecondlyForever(1))
                 .build();
 
         // 使用触发器调度任务的执行
