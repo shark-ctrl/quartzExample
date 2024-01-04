@@ -220,8 +220,7 @@ public class Main {
         log.info("任务调度时间:{}", date);
 
 
-        // 开启任务
-        scheduler.start();
+
 
         /**
          * scheduler.start();
@@ -238,6 +237,15 @@ public class Main {
         scheduler.getListenerManager()
                 .addJobListener(new MyJobListener(),
                         EverythingMatcher.allJobs());
+
+        // 创建并注册一个全局的Trigger Listener
+        scheduler.getListenerManager().addTriggerListener(new MyTriggerListener("simpleTrigger"), EverythingMatcher.allTriggers());
+
+        // 创建SchedulerListener
+        scheduler.getListenerManager().addSchedulerListener(new MySchedulerListener());
+
+        // 开启任务
+        scheduler.start();
 
     }
 
