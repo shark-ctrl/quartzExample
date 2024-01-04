@@ -173,6 +173,18 @@ public class Main {
 
         // 开启任务
         scheduler.start();
+
+        /**
+         * scheduler.start();
+         * 将任务调度挂起（暂停）：
+         *
+         * scheduler.standby();
+         * 将任务关闭：
+         *
+         * shutdown(true);//表示等待所有正在执行的job执行完毕之后，再关闭Scheduler
+         * shutdown(false);//表示直接关闭Scheduler
+         */
+        scheduler.shutdown(false);
     }
 
 
