@@ -8,13 +8,14 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
+import org.quartz.impl.matchers.EverythingMatcher;
 
 import java.util.Date;
 
 @Slf4j
 public class Main {
     public static void main(String[] args) throws Exception {
-        cronTriggerExample();
+        jobListenerExample();
     }
 
     public static void baseExample() throws SchedulerException {
@@ -184,7 +185,60 @@ public class Main {
          * shutdown(true);//表示等待所有正在执行的job执行完毕之后，再关闭Scheduler
          * shutdown(false);//表示直接关闭Scheduler
          */
+
+        // 创建并注册一个全局的Job Listener
         scheduler.shutdown(false);
+
+    }
+
+
+
+
+
+    /**
+     * 设置任务监听
+     * @throws SchedulerException
+     */
+    public static void jobListenerExample() throws SchedulerException {
+        // 获取任务调度的实例
+        Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
+
+        // 定义任务调度实例, 并与TestJob绑定
+        JobDetail job = JobBuilder.newJob(MyJob.class)
+                .withIdentity("myJob", "myJobGroup")
+                .usingJobData("count", 1)
+                .build();
+
+        Trigger trigger = TriggerBuilder.newTrigger()
+                .withIdentity("testTrigger", "testTriggerGroup")
+                .withSchedule(CronScheduleBuilder.cronSchedule("* * * * * ?"))
+                .build();
+
+        // 使用触发器调度任务的执行 获取任务调度时间
+        Date date =scheduler.scheduleJob(job, trigger);
+
+        log.info("任务调度时间:{}", date);
+
+
+        // 开启任务
+        scheduler.start();
+
+        /**
+         * scheduler.start();
+         * 将任务调度挂起（暂停）：
+         *
+         * scheduler.standby();
+         * 将任务关闭：
+         *
+         * shutdown(true);//表示等待所有正在执行的job执行完毕之后，再关闭Scheduler
+         * shutdown(false);//表示直接关闭Scheduler
+         */
+
+        // 创建并注册一个全局的Job Listener
+        scheduler.getListenerManager()
+                .addJobListener(new MyJobListener(),
+                        EverythingMatcher.allJobs());
+
     }
 
 
